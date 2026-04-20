@@ -3,27 +3,47 @@ using UnityEngine;
 public class SpawnManager : MonoBehaviour
 {
     public Transform spawnPoint;
-    public GameObject obstaclePrefab;
+    public ObstacleObjectPool obstacleObjectPool;
 
     void Start()
     {
         InvokeRepeating(nameof(Spawn), 0, 2f);
     }
 
-    void Spawn()
-    {
-        // 1.18 stop moving left when the game is over
-        GameObject player = GameObject.Find("Player");
-        bool isGameOver = player.GetComponent<PlayerController>().gameOver;
-        if (isGameOver)
-        {
-            return;
-        }
+     void Spawn()
+   {
+    GameObject player = GameObject.Find("Player");
 
-        Instantiate(
-            obstaclePrefab,
-            spawnPoint.position,
-            obstaclePrefab.transform.rotation
-        );
+    if (player == null)
+    {
+        Debug.LogError("Player not found!");
+        return;
     }
+
+    PlayerController pc = player.GetComponent<PlayerController>();
+
+    if (pc == null)
+    {
+        Debug.LogError("PlayerController missing!");
+        return;
+    }
+
+    if (pc.gameOver)
+    {
+        return;
+    }
+
+    if (obstacleObjectPool == null)
+    {
+        Debug.LogError("ObstacleObjectPool not assigned!");
+        return;
+    }
+
+     int randomType = Random.Range(0, 3);
+
+     GameObject obstacle = obstacleObjectPool.Acquire(randomType);
+
+       obstacle.transform.position = spawnPoint.position;
+       obstacle.transform.rotation = Quaternion.identity;
+   }
 }
